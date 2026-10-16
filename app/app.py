@@ -7,6 +7,15 @@ from dotenv import load_dotenv
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
 
+
+def get_config_value(key, default=None):
+    """Read Streamlit Cloud secrets, falling back to local environment variables."""
+    try:
+        return st.secrets.get(key, os.getenv(key, default))
+    except FileNotFoundError:
+        return os.getenv(key, default)
+
+
 st.set_page_config(
     page_title="Movies Recommendation System",
     page_icon="🎬",
@@ -17,12 +26,12 @@ def get_db_connection():
     """Create a connection to the PostgreSQL database."""
     try:
         conn = psycopg2.connect(
-            dbname=os.getenv("NEON_DB_NAME"),
-            user=os.getenv("NEON_DB_USER"),
-            password=os.getenv("NEON_DB_PASSWORD"),
-            host=os.getenv("NEON_DB_HOST"),
-            port=os.getenv("NEON_DB_PORT", "5432"),
-            sslmode=os.getenv("NEON_DB_SSLMODE", "require")
+            dbname=get_config_value("NEON_DB_NAME"),
+            user=get_config_value("NEON_DB_USER"),
+            password=get_config_value("NEON_DB_PASSWORD"),
+            host=get_config_value("NEON_DB_HOST"),
+            port=get_config_value("NEON_DB_PORT", "5432"),
+            sslmode=get_config_value("NEON_DB_SSLMODE", "require")
         )
         return conn
     except Exception as e:
